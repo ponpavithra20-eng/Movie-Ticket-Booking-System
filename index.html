@@ -1,40 +1,72 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Movie Ticket Booking System</title>
+    <title>Movie Ticket Booking</title>
 
     <style>
         body {
             font-family: Arial;
-            background: #f2f2f2;
+            background: #0f172a;
+            color: white;
             text-align: center;
-            padding: 40px;
-        }
-
-        .box {
-            background: white;
             padding: 20px;
-            width: 300px;
-            margin: auto;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px gray;
         }
 
-        input {
+        .container {
+            background: white;
+            color: black;
+            width: 360px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        select, input {
+            width: 90%;
             padding: 8px;
-            margin: 10px;
-            width: 80%;
+            margin: 6px 0;
+        }
+
+        .seats {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .seat {
+            padding: 8px;
+            background: #ccc;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .seat.selected {
+            background: green;
+            color: white;
         }
 
         button {
+            width: 95%;
             padding: 10px;
-            margin: 5px;
-            width: 85%;
+            margin-top: 10px;
+            border: none;
             cursor: pointer;
         }
 
+        .book {
+            background: #16a34a;
+            color: white;
+        }
+
+        .reset {
+            background: #dc2626;
+            color: white;
+        }
+
         #result {
-            margin-top: 15px;
+            margin-top: 10px;
             font-weight: bold;
         }
     </style>
@@ -42,59 +74,115 @@
 
 <body>
 
-    <h2>🎬 Movie Ticket Booking System</h2>
+<h2>🎬 Movie Ticket Booking System</h2>
 
-    <div class="box">
+<div class="container">
 
-        <input type="number" id="age" placeholder="Enter Age">
-        <input type="number" id="tickets" placeholder="Number of Tickets">
+    <select id="movie">
+        <option value="">Select Movie</option>
+        <option value="Avengers">Avengers</option>
+        <option value="Interstellar">Interstellar</option>
+        <option value="Inception">Inception</option>
+    </select>
 
-        <button onclick="calculatePrice()">Calculate Price</button>
-        <button onclick="resetForm()">Reset</button>
+    <select id="time">
+        <option value="">Select Time</option>
+        <option value="10AM">10 AM</option>
+        <option value="2PM">2 PM</option>
+        <option value="6PM">6 PM</option>
+    </select>
 
-        <div id="result"></div>
+    <input type="number" id="age" placeholder="Enter Age">
 
-    </div>
+    <h4>Select Seats</h4>
+    <div class="seats" id="seatContainer"></div>
 
-    <script>
-        function calculatePrice() {
+    <h3 id="total">Total: ₹0</h3>
 
-            let age = Number(document.getElementById("age").value);
-            let tickets = Number(document.getElementById("tickets").value);
+    <button class="book" onclick="book()">Book Ticket</button>
+    <button class="reset" onclick="resetAll()">Reset</button>
 
-            let resultBox = document.getElementById("result");
+    <div id="result"></div>
 
-            // validation
-            if (age <= 0 || tickets <= 0) {
-                resultBox.innerHTML = "⚠ Please enter valid values!";
-                return;
+</div>
+
+<script>
+    let selectedSeats = [];
+
+    // create seats
+    let seatContainer = document.getElementById("seatContainer");
+
+    for (let i = 1; i <= 10; i++) {
+        let seat = document.createElement("div");
+        seat.classList.add("seat");
+        seat.innerText = i;
+
+        seat.onclick = function () {
+            if (selectedSeats.includes(i)) {
+                selectedSeats = selectedSeats.filter(s => s !== i);
+                seat.classList.remove("selected");
+            } else {
+                selectedSeats.push(i);
+                seat.classList.add("selected");
             }
+            updateTotal();
+        };
 
-            let pricePerTicket;
+        seatContainer.appendChild(seat);
+    }
 
-            if (age < 12) {
-                pricePerTicket = 100;
-            } 
-            else if (age <= 60) {
-                pricePerTicket = 200;
-            } 
-            else {
-                pricePerTicket = 150;
-            }
+    function getPrice(age) {
+        if (age < 12) return 100;
+        if (age > 60) return 150;
+        return 200;
+    }
 
-            let total = pricePerTicket * tickets;
+    function updateTotal() {
+        let age = Number(document.getElementById("age").value);
+        let price = getPrice(age || 0);
+        let total = price * selectedSeats.length;
 
-            resultBox.innerHTML =
-                "🎟 Price per ticket: ₹" + pricePerTicket +
-                "<br>🎫 Total price: ₹" + total;
+        document.getElementById("total").innerText =
+            "Total: ₹" + total;
+    }
+
+    document.getElementById("age").oninput = updateTotal;
+
+    function book() {
+        let movie = document.getElementById("movie").value;
+        let time = document.getElementById("time").value;
+        let age = Number(document.getElementById("age").value);
+
+        if (!movie || !time || !age || selectedSeats.length === 0) {
+            document.getElementById("result").innerHTML =
+                "⚠ Please fill all details!";
+            return;
         }
 
-        function resetForm() {
-            document.getElementById("age").value = "";
-            document.getElementById("tickets").value = "";
-            document.getElementById("result").innerHTML = "";
-        }
-    </script>
+        let price = getPrice(age);
+        let total = price * selectedSeats.length;
+
+        document.getElementById("result").innerHTML =
+            "🎬 Movie: " + movie +
+            "<br>⏰ Time: " + time +
+            "<br>🎟 Seats: " + selectedSeats.join(", ") +
+            "<br>💰 Total: ₹" + total +
+            "<br>✅ Booking Confirmed!";
+    }
+
+    function resetAll() {
+        selectedSeats = [];
+        document.getElementById("movie").value = "";
+        document.getElementById("time").value = "";
+        document.getElementById("age").value = "";
+        document.getElementById("result").innerHTML = "";
+        document.getElementById("total").innerText = "Total: ₹0";
+
+        document.querySelectorAll(".seat").forEach(s => {
+            s.classList.remove("selected");
+        });
+    }
+</script>
 
 </body>
 </html>
