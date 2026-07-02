@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movie Ticket Booking System</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f2f2f2;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .box {
+            background: white;
+            padding: 20px;
+            width: 300px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px gray;
+        }
+
+        input {
+            padding: 8px;
+            margin: 10px;
+            width: 80%;
+        }
+
+        button {
+            padding: 10px;
+            margin: 5px;
+            width: 85%;
+            cursor: pointer;
+        }
+
+        #result {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>🎬 Movie Ticket Booking System</h2>
+
+    <div class="box">
+
+        <input type="number" id="age" placeholder="Enter Age">
+        <input type="number" id="tickets" placeholder="Number of Tickets">
+
+        <button onclick="calculatePrice()">Calculate Price</button>
+        <button onclick="resetForm()">Reset</button>
+
+        <div id="result"></div>
+
+    </div>
+
+    <script>
+        function calculatePrice() {
+
+            let age = Number(document.getElementById("age").value);
+            let tickets = Number(document.getElementById("tickets").value);
+
+            let resultBox = document.getElementById("result");
+
+            // validation
+            if (age <= 0 || tickets <= 0) {
+                resultBox.innerHTML = "⚠ Please enter valid values!";
+                return;
+            }
+
+            let pricePerTicket;
+
+            if (age < 12) {
+                pricePerTicket = 100;
+            } 
+            else if (age <= 60) {
+                pricePerTicket = 200;
+            } 
+            else {
+                pricePerTicket = 150;
+            }
+
+            let total = pricePerTicket * tickets;
+
+            resultBox.innerHTML =
+                "🎟 Price per ticket: ₹" + pricePerTicket +
+                "<br>🎫 Total price: ₹" + total;
+        }
+
+        function resetForm() {
+            document.getElementById("age").value = "";
+            document.getElementById("tickets").value = "";
+            document.getElementById("result").innerHTML = "";
+        }
+    </script>
+
+</body>
+</html>
