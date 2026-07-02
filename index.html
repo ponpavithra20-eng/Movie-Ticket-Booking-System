@@ -1,186 +1,222 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Movie Ticket Booking</title>
+    <title>Movie Booking</title>
 
     <style>
         body {
             font-family: Arial;
-            background: #0f172a;
+            background: #0b1220;
             color: white;
             text-align: center;
-            padding: 20px;
         }
 
-        .container {
+        .box {
             background: white;
             color: black;
-            width: 360px;
-            margin: auto;
-            padding: 20px;
+            width: 380px;
+            margin: 20px auto;
+            padding: 15px;
             border-radius: 12px;
         }
 
         select, input {
             width: 90%;
             padding: 8px;
-            margin: 6px 0;
+            margin: 5px;
         }
 
         .seats {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
+            gap: 6px;
             margin: 10px 0;
         }
 
         .seat {
             padding: 8px;
-            background: #ccc;
+            background: #d1d5db;
             cursor: pointer;
             border-radius: 5px;
-            font-size: 12px;
         }
 
         .seat.selected {
-            background: green;
+            background: #22c55e;
+            color: white;
+        }
+
+        .seat.booked {
+            background: #ef4444;
+            cursor: not-allowed;
             color: white;
         }
 
         button {
             width: 95%;
             padding: 10px;
-            margin-top: 10px;
+            margin: 5px;
             border: none;
             cursor: pointer;
         }
 
-        .book {
-            background: #16a34a;
-            color: white;
-        }
+        .book { background: #16a34a; color: white; }
+        .reset { background: #dc2626; color: white; }
 
-        .reset {
-            background: #dc2626;
-            color: white;
-        }
-
-        #result {
+        #ticket {
             margin-top: 10px;
             font-weight: bold;
+        }
+
+        .poster {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 
 <body>
 
-<h2>Movie Ticket Booking System</h2>
+<h2>Movie Ticket Booking</h2>
 
-<div class="container">
+<div class="box">
 
-    <select id="movie">
+    <img id="poster" class="poster" src="https://via.placeholder.com/300x150" />
+
+    <select id="movie" onchange="changeMovie()">
         <option value="">Select Movie</option>
         <option value="Avengers">Avengers</option>
-        <option value="Interstellar">Interstellar</option>
         <option value="Inception">Inception</option>
+        <option value="Interstellar">Interstellar</option>
     </select>
 
     <select id="time">
         <option value="">Select Time</option>
-        <option value="10AM">10 AM</option>
-        <option value="2PM">2 PM</option>
-        <option value="6PM">6 PM</option>
+        <option>10AM</option>
+        <option>2PM</option>
+        <option>6PM</option>
     </select>
 
     <input type="number" id="age" placeholder="Enter Age">
 
     <h4>Select Seats</h4>
-    <div class="seats" id="seatContainer"></div>
+    <div class="seats" id="seatBox"></div>
 
-    <h3 id="total">Total: ₹0</h3>
+    <h3 id="price">Total: ₹0</h3>
 
-    <button class="book" onclick="book()">Book Ticket</button>
+    <button class="book" onclick="bookTicket()">Book Ticket</button>
     <button class="reset" onclick="resetAll()">Reset</button>
 
-    <div id="result"></div>
+    <div id="ticket"></div>
 
 </div>
 
 <script>
-    let selectedSeats = [];
+    let selected = [];
+    let booked = [3, 7]; // already booked seats
 
-    // create seats
-    let seatContainer = document.getElementById("seatContainer");
+    let seatBox = document.getElementById("seatBox");
 
-    for (let i = 1; i <= 10; i++) {
-        let seat = document.createElement("div");
-        seat.classList.add("seat");
-        seat.innerText = i;
+    function createSeats() {
+        seatBox.innerHTML = "";
 
-        seat.onclick = function () {
-            if (selectedSeats.includes(i)) {
-                selectedSeats = selectedSeats.filter(s => s !== i);
-                seat.classList.remove("selected");
-            } else {
-                selectedSeats.push(i);
-                seat.classList.add("selected");
+        for (let i = 1; i <= 10; i++) {
+            let seat = document.createElement("div");
+            seat.innerText = i;
+            seat.classList.add("seat");
+
+            if (booked.includes(i)) {
+                seat.classList.add("booked");
             }
-            updateTotal();
-        };
 
-        seatContainer.appendChild(seat);
+            seat.onclick = function () {
+                if (booked.includes(i)) return;
+
+                if (selected.includes(i)) {
+                    selected = selected.filter(s => s !== i);
+                    seat.classList.remove("selected");
+                } else {
+                    selected.push(i);
+                    seat.classList.add("selected");
+                }
+
+                updatePrice();
+            };
+
+            seatBox.appendChild(seat);
+        }
     }
 
+    createSeats();
+
     function getPrice(age) {
-        if (age < 12) return 100;
+        if (age < 12) return 120;
         if (age > 60) return 150;
         return 200;
     }
 
-    function updateTotal() {
-        let age = Number(document.getElementById("age").value);
-        let price = getPrice(age || 0);
-        let total = price * selectedSeats.length;
+    function updatePrice() {
+        let age = Number(document.getElementById("age").value || 0);
+        let base = getPrice(age);
 
-        document.getElementById("total").innerText =
-            "Total: ₹" + total;
+        let subtotal = base * selected.length;
+        let tax = subtotal * 0.05;
+        let total = subtotal + tax;
+
+        document.getElementById("price").innerText =
+            "Total: ₹" + Math.round(total);
     }
 
-    document.getElementById("age").oninput = updateTotal;
+    document.getElementById("age").oninput = updatePrice;
 
-    function book() {
+    function changeMovie() {
+        let movie = document.getElementById("movie").value;
+        let poster = document.getElementById("poster");
+
+        if (movie === "Avengers") {
+            poster.src = "https://via.placeholder.com/300x150/ff0000/ffffff?text=Avengers";
+        }
+        else if (movie === "Inception") {
+            poster.src = "https://via.placeholder.com/300x150/0000ff/ffffff?text=Inception";
+        }
+        else if (movie === "Interstellar") {
+            poster.src = "https://via.placeholder.com/300x150/00aa00/ffffff?text=Interstellar";
+        }
+    }
+
+    function bookTicket() {
         let movie = document.getElementById("movie").value;
         let time = document.getElementById("time").value;
-        let age = Number(document.getElementById("age").value);
+        let age = document.getElementById("age").value;
 
-        if (!movie || !time || !age || selectedSeats.length === 0) {
-            document.getElementById("result").innerHTML =
-                "Please fill all details!";
+        if (!movie || !time || !age || selected.length === 0) {
+            alert("Fill all details!");
             return;
         }
 
-        let price = getPrice(age);
-        let total = price * selectedSeats.length;
+        let ticketID = "TID" + Math.floor(Math.random() * 100000);
 
-        document.getElementById("result").innerHTML =
-            "Movie: " + movie +
+        document.getElementById("ticket").innerHTML =
+            "Ticket ID: " + ticketID +
+            "<br>Movie: " + movie +
             "<br>Time: " + time +
-            "<br>Seats: " + selectedSeats.join(", ") +
-            "<br>Total: ₹" + total +
+            "<br>Seats: " + selected.join(", ") +
             "<br>Booking Confirmed!";
+        
+        booked = booked.concat(selected);
+        selected = [];
+        createSeats();
+        updatePrice();
     }
 
     function resetAll() {
-        selectedSeats = [];
+        selected = [];
         document.getElementById("movie").value = "";
         document.getElementById("time").value = "";
         document.getElementById("age").value = "";
-        document.getElementById("result").innerHTML = "";
-        document.getElementById("total").innerText = "Total: ₹0";
-
-        document.querySelectorAll(".seat").forEach(s => {
-            s.classList.remove("selected");
-        });
+        document.getElementById("ticket").innerHTML = "";
+        document.getElementById("price").innerText = "Total: ₹0";
+        createSeats();
     }
 </script>
 
